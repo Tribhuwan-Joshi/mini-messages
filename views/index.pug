@@ -1,0 +1,14 @@
+extends layout
+
+block content
+  h1= title
+  h2  Welcome to #{title}
+  a(href="/new") Create Message 
+  each m in messages
+    div
+      h3= m.user
+      p= m.text 
+      p= m.added
+
+
+
