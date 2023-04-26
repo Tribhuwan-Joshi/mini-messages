@@ -1,30 +1,40 @@
-var express = require("express");
-var router = express.Router();
-const messages = [
-  {
-    text: "Hi there!",
-    user: "Amando",
-    added: new Date(),
-  },
-  {
-    text: "Hello World!",
-    user: "Charles",
-    added: new Date(),
-  },
-];
+require("dotenv").config();
+const express = require("express");
+const router = express.Router();
+const mongoose = require("mongoose");
+const Message = require("../models/message");
+
+// connect mongodb
+mongoose.set("strictQuery", false);
+async function connectToDatabase() {
+  await mongoose.connect(process.env.MONGO_URL);
+}
+connectToDatabase().catch((err) => console.log(err));
 
 /* GET home page. */
-router.get("/", function (req, res, next) {
-  res.render("index", { title: "Mini Message", messages: messages });
+router.get("/", async function (req, res, next) {
+  try {
+    const messages = await Message.find({});
+    res.render("index", { title: "Mini Message", messages: messages });
+  } catch (err) {
+    console.log(err.message);
+    next(err);
+  }
 });
 
-router.get("/new",function(req,res){
-  res.render("form")
-})
-router.post("/new",function(req,res){
-  const user = req.body.username;
-  const text = req.body.text;
-  messages.push({ text: text, user: user, added: new Date() });
-  res.redirect('/')
-})
+router.get("/new", function (req, res) {
+  res.render("form");
+});
+router.post("/new", async function (req, res) {
+  try {
+    const user = req.body.username;
+    const text = req.body.text;
+    const message = new Message({ text, user });
+    await message.save();
+    res.redirect("/");
+  } catch (err) {
+    console.log(err.message);
+    next(err);
+  }
+});
 module.exports = router;
